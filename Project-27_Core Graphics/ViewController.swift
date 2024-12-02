@@ -23,7 +23,7 @@ class ViewController: UIViewController {
     @IBAction func redrawTapped(_ sender: Any) {
         currentDrawType += 1
         
-        if currentDrawType > 5 {
+        if currentDrawType > 7 {
             currentDrawType = 0
         }
         
@@ -40,6 +40,10 @@ class ViewController: UIViewController {
             drawLines()
         case 5:
             drawImagesAndText()
+        case 6:
+            drawEmojiSmile()
+        case 7:
+            drawEmojiStar()
         default:
             break
         }
@@ -147,34 +151,115 @@ class ViewController: UIViewController {
         
         imageView.image = img
     }
-
+    
     func drawImagesAndText() {
         // 1 Создайте рендерер нужного размера
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
-
+        
         let img = renderer.image { ctx in
             // 2 Определите стиль абзаца, который выравнивает текст по центру
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.alignment = .center
-
+            
             // 3 Создайте словарь атрибутов, содержащий этот стиль абзаца, а также шрифт
             let attrs: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: 36),
                 .paragraphStyle: paragraphStyle
             ]
-
+            
             // 4 Оберните этот словарь атрибутов и строку в экземпляр NSAttributedString
             let string = "The best-laid schemes o'\nmice an' men gang aft agley"
             let attributedString = NSAttributedString(string: string, attributes: attrs)
-
+            
             // 5 Загрузите изображение из проекта и нарисуйте его в контексте
             attributedString.draw(with: CGRect(x: 32, y: 32, width: 448, height: 448), options: .usesLineFragmentOrigin, context: nil)
-
+            
             let mouse = UIImage(named: "mouse")
             mouse?.draw(at: CGPoint(x: 300, y: 150))
         }
-
+        
         // 6 Обновите вид изображения с готовым результатом
+        imageView.image = img
+    }
+    
+    func drawEmojiSmile() {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
+        
+        let img = renderer.image { ctx in
+            let context = ctx.cgContext
+            
+            // 1. Лицо (круг)
+            let faceRect = CGRect(x: 56, y: 56, width: 400, height: 400)
+            context.setFillColor(UIColor.yellow.cgColor)
+            context.fillEllipse(in: faceRect)
+            
+            // 2. Левый глаз
+            let leftEyeRect = CGRect(x: 160, y: 160, width: 50, height: 50)
+            context.setFillColor(UIColor.black.cgColor)
+            context.fillEllipse(in: leftEyeRect)
+            
+            // 3. Правый глаз
+            let rightEyeRect = CGRect(x: 300, y: 160, width: 50, height: 50)
+            context.fillEllipse(in: rightEyeRect)
+            
+            // 4. Улыбка (дуга)
+            context.setStrokeColor(UIColor.red.cgColor)
+            context.setLineWidth(10)
+            context.addArc(center: CGPoint(x: 256, y: 300),
+                           radius: 120,
+                           startAngle: 0.2 * .pi,
+                           endAngle: 0.8 * .pi,
+                           clockwise: false)
+            context.strokePath()
+        }
+        
+        imageView.image = img
+    }
+    
+    func drawEmojiStar() {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
+        
+        let img = renderer.image { ctx in
+            let context = ctx.cgContext
+            
+            context.setFillColor(UIColor.yellow.cgColor)
+            context.setStrokeColor(UIColor.orange.cgColor)
+            context.setLineWidth(5)
+            
+            // Центр и радиусы
+            let center = CGPoint(x: 256, y: 256)
+            let radius: CGFloat = 150
+            let innerRadius: CGFloat = 60
+            let pointsOnStar = 5
+            
+            var angle = -CGFloat.pi / 2 // Начальный угол
+            
+            let angleIncrement = CGFloat.pi * 2 / CGFloat(pointsOnStar * 2)
+            
+            let path = CGMutablePath()
+            
+            for i in 0..<(pointsOnStar * 2) {
+                let isEven = i % 2 == 0
+                let distance = isEven ? radius : innerRadius
+                
+                let x = center.x + cos(angle) * distance
+                let y = center.y + sin(angle) * distance
+                
+                if i == 0 {
+                    path.move(to: CGPoint(x: x, y: y))
+                } else {
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+                
+                angle += angleIncrement
+            }
+            
+            path.closeSubpath()
+            
+            context.addPath(path)
+            context.drawPath(using: .fillStroke)
+        }
+        
         imageView.image = img
     }
 }
